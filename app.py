@@ -1,8 +1,27 @@
 
 
+from keras.models import load_model
+from PIL import Image, ImageOps
+import numpy as np
 import streamlit as st
-from PIL import Image
-import image_classifier
+
+
+def image_classifier_model(img, model_file) -> float:
+    """Returns the prediction score of image by the model Used"""
+
+    model = load_model(model_file)
+    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+    
+    image = img
+    size = (224, 224)
+    image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    image_array = np.asarray(image)
+    
+    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    data[0] = normalized_image_array
+    prediction = model.predict(data)
+
+    return np.argmax(prediction)
 
 
 st.title(
@@ -23,7 +42,7 @@ if upload_file is not None:
     st.write("")
     st.write("Running Model Algorithms ... ")
 
-    label = image_classifier.image_classifier_model(
+    label = image_classifier_model(
         img=upload_file, model_file='model/keras_model.h5'
     )
 
